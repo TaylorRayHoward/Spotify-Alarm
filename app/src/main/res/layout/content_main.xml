@@ -13,4 +13,10 @@
     tools:context="com.taylorrayhoward.taylor.spotifyalarm.MainActivity"
     tools:showIn="@layout/activity_main">
 
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/alarm_listview"/>
 </RelativeLayout>

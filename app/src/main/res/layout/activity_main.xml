@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
+    android:background="#C0C0C0"
     tools:context="com.taylorrayhoward.taylor.spotifyalarm.MainActivity">
 
     <android.support.design.widget.AppBarLayout
@@ -16,7 +17,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
+            android:background="#004E98"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </android.support.design.widget.AppBarLayout>
@@ -30,9 +31,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="top|left"
         android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@drawable/ic_alarm_add_black_24dp"
+        app:srcCompat="@drawable/ic_add_white_48dp"
         app:layout_anchor="@+id/include"
         app:layout_anchorGravity="bottom|right"
-        app:backgroundTint="@android:color/holo_blue_dark" />
+        app:backgroundTint="#FF6700" />
 
 </android.support.design.widget.CoordinatorLayout>

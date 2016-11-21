@@ -1,25 +1,33 @@
 package com.taylorrayhoward.taylor.spotifyalarm;
 
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.TimePicker;
 import android.widget.Toast;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
+import com.spotify.sdk.android.player.Spotify;
+
+import java.util.Calendar;
+
+import kaaes.spotify.webapi.android.SpotifyApi;
+
 import static com.spotify.sdk.android.authentication.LoginActivity.REQUEST_CODE;
 import static com.taylorrayhoward.taylor.spotifyalarm.Info.CLIENT_ID;
 import static com.taylorrayhoward.taylor.spotifyalarm.Info.REDIRECT_URI;
 
 public class MainActivity extends AppCompatActivity implements ConnectionStateCallback{
-
+    //TODO Add database, add custom rows, add on click rows, finish whole project
     public String accessToken;
+    public SpotifyApi api = new SpotifyApi();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,8 +39,17 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Calendar c = Calendar.getInstance();
+                TimePickerDialog timePickerDialog = new TimePickerDialog(MainActivity.this,
+                        new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker timePicker, int i, int i1) {
+                        //TODO Insert into database
+                    }
+                }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), false);
+                timePickerDialog.show();
             }
+
         });
         AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
                 AuthenticationResponse.Type.TOKEN,
@@ -52,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
             AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
             if (response.getType() == AuthenticationResponse.Type.TOKEN) {
                 accessToken = response.getAccessToken();
+                api.setAccessToken(response.getAccessToken());
             }
         }
     }
