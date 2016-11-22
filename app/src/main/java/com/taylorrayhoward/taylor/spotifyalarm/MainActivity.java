@@ -8,6 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
@@ -32,6 +34,12 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        String[] s1 = {"9:45pm","7:35am", "9:35am", "2:45pm", "9:45pm"};
+        ListAdapter listAdapter = new AlarmAdapter(this, s1);
+        ListView listView = (ListView) findViewById(R.id.alarm_listview);
+        listView.setAdapter(listAdapter);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
