@@ -1,13 +1,16 @@
 package com.taylorrayhoward.taylor.spotifyalarm;
 
+import android.app.ListActivity;
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TimePicker;
@@ -19,6 +22,7 @@ import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
 import com.spotify.sdk.android.player.Spotify;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 
@@ -33,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
     public String accessToken;
     public SpotifyApi api = new SpotifyApi();
     private AlarmDBHelper db = new AlarmDBHelper(this);
+    ListAdapter listAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
         generateAlarmList();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        Log.d("AlarmTimes", "test");
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -51,10 +57,9 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
                         new TimePickerDialog.OnTimeSetListener() {
                             @Override
                             public void onTimeSet(TimePicker timePicker, int hour, int minute) {
+                                Log.d("AlarmTimes", "test");
                                 db.insertAlarm(String.valueOf(hour), String.valueOf(minute), "");
-                                Toast.makeText(getApplicationContext(), "GOt it at +" + hour + minute, Toast.LENGTH_LONG).show();
                                 generateAlarmList();
-                                //TODO Insert into database
                             }
                         }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), false);
                 timePickerDialog.show();
@@ -70,10 +75,16 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
     }
 
+
+
     private void generateAlarmList() {
-        String[] s1 = Arrays.copyOf(db.getAlarmTimes().toArray(), db.getAlarmTimes().size(), String[].class);
-        ListAdapter listAdapter = new AlarmAdapter(this, s1);
+//        String[] s1 = Arrays.copyOf(db.getAlarmTimes().toArray(), db.getAlarmTimes().size(), String[].class);
+        ArrayList<Alarm> alarmList = db.getAllData();
+        for (Alarm a : alarmList) {
+            Log.d("AlarmTimes", a.getTime());
+        }
         ListView listView = (ListView) findViewById(R.id.alarm_listview);
+        listAdapter = new AlarmAdapter(this, alarmList);
         listView.setAdapter(listAdapter);
     }
 
