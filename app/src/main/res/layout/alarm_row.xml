@@ -1,15 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#353535">
-
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:srcCompat="@drawable/ic_alarm_on_white_18dp"
-        android:id="@+id/onoffbutton" />
+    android:background="#353535"
+    android:weightSum="1">
 
     <TextView
         android:text="7:35am"
@@ -19,5 +14,17 @@
         android:gravity="center_vertical"
         android:textSize="24sp"
         android:textColor="#FFFFFF"
-        />
-</LinearLayout>
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/onoffbutton"
+        android:layout_alignBottom="@+id/onoffbutton" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="103dp"
+        app:srcCompat="@drawable/ic_alarm_on_white_36dp"
+        android:id="@+id/onoffbutton"
+        android:layout_weight="0.26"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:background="?android:selectableItemBackground"/>
+</RelativeLayout>

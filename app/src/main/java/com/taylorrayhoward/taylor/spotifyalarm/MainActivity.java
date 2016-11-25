@@ -12,12 +12,14 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
 import com.spotify.sdk.android.player.Spotify;
 
+import java.util.Arrays;
 import java.util.Calendar;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
@@ -26,20 +28,17 @@ import static com.spotify.sdk.android.authentication.LoginActivity.REQUEST_CODE;
 import static com.taylorrayhoward.taylor.spotifyalarm.Info.CLIENT_ID;
 import static com.taylorrayhoward.taylor.spotifyalarm.Info.REDIRECT_URI;
 
-public class MainActivity extends AppCompatActivity implements ConnectionStateCallback{
+public class MainActivity extends AppCompatActivity implements ConnectionStateCallback {
     //TODO Add database, add custom rows, add on click rows, finish whole project
     public String accessToken;
     public SpotifyApi api = new SpotifyApi();
+    private AlarmDBHelper db = new AlarmDBHelper(this);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        String[] s1 = {"9:45pm","7:35am", "9:35am", "2:45pm", "9:45pm"};
-        ListAdapter listAdapter = new AlarmAdapter(this, s1);
-        ListView listView = (ListView) findViewById(R.id.alarm_listview);
-        listView.setAdapter(listAdapter);
-
+        generateAlarmList();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -50,11 +49,14 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
                 Calendar c = Calendar.getInstance();
                 TimePickerDialog timePickerDialog = new TimePickerDialog(MainActivity.this,
                         new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                        //TODO Insert into database
-                    }
-                }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), false);
+                            @Override
+                            public void onTimeSet(TimePicker timePicker, int hour, int minute) {
+                                db.insertAlarm(String.valueOf(hour), String.valueOf(minute), "");
+                                Toast.makeText(getApplicationContext(), "GOt it at +" + hour + minute, Toast.LENGTH_LONG).show();
+                                generateAlarmList();
+                                //TODO Insert into database
+                            }
+                        }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), false);
                 timePickerDialog.show();
             }
 
@@ -66,6 +68,13 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
         AuthenticationRequest request = builder.build();
 
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+    }
+
+    private void generateAlarmList() {
+        String[] s1 = Arrays.copyOf(db.getAlarmTimes().toArray(), db.getAlarmTimes().size(), String[].class);
+        ListAdapter listAdapter = new AlarmAdapter(this, s1);
+        ListView listView = (ListView) findViewById(R.id.alarm_listview);
+        listView.setAdapter(listAdapter);
     }
 
     @Override
