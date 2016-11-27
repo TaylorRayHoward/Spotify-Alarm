@@ -1,33 +1,40 @@
 package com.taylorrayhoward.taylor.spotifyalarm;
 
-import android.app.ListActivity;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
+import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TimePicker;
 import android.widget.Toast;
-
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
-import com.spotify.sdk.android.player.Spotify;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
+import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Playlist;
+import kaaes.spotify.webapi.android.models.PlaylistSimple;
 
 import static com.spotify.sdk.android.authentication.LoginActivity.REQUEST_CODE;
 import static com.taylorrayhoward.taylor.spotifyalarm.Info.CLIENT_ID;
@@ -39,7 +46,9 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
     public SpotifyApi api = new SpotifyApi();
     private AlarmDBHelper db = new AlarmDBHelper(this);
     ListAdapter listAdapter;
-    ListView listView;
+    ListView alarm_listview;
+    SpotifyService spotify;
+    List<PlaylistSimple> listOfPlaylists;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,9 +66,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
                         new TimePickerDialog.OnTimeSetListener() {
                             @Override
                             public void onTimeSet(TimePicker timePicker, int hour, int minute) {
-                                Log.d("AlarmTimes", "test");
-                                db.insertAlarm(String.valueOf(hour), String.valueOf(minute), "");
-                                generateAlarmList();
+                                setupPlaylistDialog(String.valueOf(hour), String.valueOf(minute));
                             }
                         }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), false);
                 timePickerDialog.show();
@@ -73,16 +80,61 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
         AuthenticationRequest request = builder.build();
 
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+        setupAlarmListView();
+        spotify = api.getService();
 
-        listView = (ListView) findViewById(R.id.alarm_listview);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    }
+
+    private void setupPlaylistDialog(String hour, String minute){
+        try {
+            new getPlaylistSync().execute().get(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+            e.printStackTrace();
+        }
+        final String h = hour;
+        final String m = minute;
+        String[] names = new String[listOfPlaylists.size()];
+        int i = 0;
+        for (PlaylistSimple p : listOfPlaylists) {
+            names[i] = p.name;
+            i++;
+        }
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
+        LayoutInflater inflater = getLayoutInflater();
+        View convertView = inflater.inflate(R.layout.playlist_dialog, null);
+        alertDialog.setView(convertView);
+        ListView lv = (ListView) convertView.findViewById(R.id.playlist_listview);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),R.layout.playlist_row, names);
+        lv.setAdapter(adapter);
+        //alertDialog.setCancelable(false); //TODO: Make them pick a playlist here
+        alertDialog.setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                insert(h, m);
+            }
+        });
+        alertDialog.show();
+    }
+
+    private void insert(String h, String m) {
+        db.insertAlarm(String.valueOf(h), String.valueOf(m), "");
+        generateAlarmList();
+    }
+
+    private void setupAlarmListView(){
+        alarm_listview = (ListView) findViewById(R.id.alarm_listview);
+        alarm_listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Alarm a = (Alarm)adapterView.getItemAtPosition(i);
                 Toast.makeText(getApplicationContext(), a.getTime(), Toast.LENGTH_SHORT).show();
             }
         });
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+        alarm_listview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Alarm a = (Alarm)adapterView.getItemAtPosition(i);
@@ -92,10 +144,11 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
             }
         });
         generateAlarmList();
-
     }
 
+    private void setupPlaylistListView(){
 
+    }
 
     private void generateAlarmList() {
         ArrayList<Alarm> alarmList = db.getAllData();
@@ -103,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
             Log.d("AlarmTimes", a.getTime());
         }
         listAdapter = new AlarmAdapter(this, alarmList);
-        listView.setAdapter(listAdapter);
+        alarm_listview.setAdapter(listAdapter);
     }
 
     @Override
@@ -122,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
 
     @Override
     public void onLoggedIn() {
-        Log.d("Login", "Succesfully logged in");
+        Log.d("Login", "Successfully logged in");
         Toast.makeText(getApplicationContext(), "Log in successful", Toast.LENGTH_SHORT).show();
     }
 
@@ -144,5 +197,15 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
     @Override
     public void onConnectionMessage(String s) {
 
+    }
+
+    private class getPlaylistSync extends AsyncTask<Void, Void, Integer> {
+        @Override
+        protected Integer doInBackground(Void... voids) {
+            Log.d("Async", "Getting playlist data");
+            String id = spotify.getMe().id;
+            listOfPlaylists  = spotify.getPlaylists(id).items;
+            return 1;
+        }
     }
 }
