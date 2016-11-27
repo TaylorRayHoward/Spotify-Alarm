@@ -4,7 +4,8 @@
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#353535"
-    android:weightSum="1">
+    android:weightSum="1"
+    android:descendantFocusability="blocksDescendants">
 
     <TextView
         android:text="7:35am"
@@ -23,7 +24,6 @@
         android:layout_height="103dp"
         app:srcCompat="@drawable/ic_alarm_on_white_36dp"
         android:id="@+id/onoffbutton"
-        android:layout_weight="0.26"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:background="?android:selectableItemBackground"/>

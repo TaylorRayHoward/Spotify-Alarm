@@ -11,6 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TimePicker;
@@ -38,15 +39,14 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
     public SpotifyApi api = new SpotifyApi();
     private AlarmDBHelper db = new AlarmDBHelper(this);
     ListAdapter listAdapter;
+    ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        generateAlarmList();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        Log.d("AlarmTimes", "test");
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -73,17 +73,35 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
         AuthenticationRequest request = builder.build();
 
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+
+        listView = (ListView) findViewById(R.id.alarm_listview);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Alarm a = (Alarm)adapterView.getItemAtPosition(i);
+                Toast.makeText(getApplicationContext(), a.getTime(), Toast.LENGTH_SHORT).show();
+            }
+        });
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Alarm a = (Alarm)adapterView.getItemAtPosition(i);
+                db.deleteAlarm(a.getId());
+                generateAlarmList();
+                return true;
+            }
+        });
+        generateAlarmList();
+
     }
 
 
 
     private void generateAlarmList() {
-//        String[] s1 = Arrays.copyOf(db.getAlarmTimes().toArray(), db.getAlarmTimes().size(), String[].class);
         ArrayList<Alarm> alarmList = db.getAllData();
         for (Alarm a : alarmList) {
             Log.d("AlarmTimes", a.getTime());
         }
-        ListView listView = (ListView) findViewById(R.id.alarm_listview);
         listAdapter = new AlarmAdapter(this, alarmList);
         listView.setAdapter(listAdapter);
     }
