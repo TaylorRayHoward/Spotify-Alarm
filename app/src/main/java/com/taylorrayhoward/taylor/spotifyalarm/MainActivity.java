@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
                         new TimePickerDialog.OnTimeSetListener() {
                             @Override
                             public void onTimeSet(TimePicker timePicker, int hour, int minute) {
-                                setupPlaylistDialog(String.valueOf(hour), String.valueOf(minute));
+                                setupPlaylistDialog(String.format("%02d", hour),String.format("%02d", minute));
                             }
                         }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), false);
                 timePickerDialog.show();
@@ -88,40 +88,37 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
     private void setupPlaylistDialog(String hour, String minute){
         try {
             new getPlaylistSync().execute().get(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
         }
         final String h = hour;
         final String m = minute;
-        String[] names = new String[listOfPlaylists.size()];
-        int i = 0;
+        ArrayList<String> names = new ArrayList<>();
         for (PlaylistSimple p : listOfPlaylists) {
-            names[i] = p.name;
-            i++;
+            names.add(p.name);
         }
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
         LayoutInflater inflater = getLayoutInflater();
         View convertView = inflater.inflate(R.layout.playlist_dialog, null);
-        alertDialog.setView(convertView);
+        alertDialogBuilder.setView(convertView);
         ListView lv = (ListView) convertView.findViewById(R.id.playlist_listview);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),R.layout.playlist_row, names);
-        lv.setAdapter(adapter);
-        //alertDialog.setCancelable(false); //TODO: Make them pick a playlist here
-        alertDialog.setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(), R.layout.playlist_row, names);
+        final AlertDialog dialog = alertDialogBuilder.show();
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                insert(h, m);
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                insert(h, m, listOfPlaylists.get(i).name, listOfPlaylists.get(i).id, listOfPlaylists.get(i).uri);
+
+                dialog.dismiss();
             }
         });
-        alertDialog.show();
+        lv.setAdapter(adapter);
+        //alertDialog.setCancelable(false); //TODO: Make them pick a playlist here
+
     }
 
-    private void insert(String h, String m) {
-        db.insertAlarm(String.valueOf(h), String.valueOf(m), "");
+    private void insert(String hour, String minute, String name, String id, String uri) {
+        db.insertAlarm(String.valueOf(hour), String.valueOf(minute), "", name, id, uri);
         generateAlarmList();
     }
 
