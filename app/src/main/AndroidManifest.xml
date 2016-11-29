@@ -24,6 +24,13 @@
         <activity
             android:name="com.spotify.sdk.android.authentication.LoginActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <activity
+            android:name=".AlarmActivity"
+            android:label="@string/title_activity_alarm"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <receiver android:name=".AlarmReceiver" />
     </application>
 
 </manifest>

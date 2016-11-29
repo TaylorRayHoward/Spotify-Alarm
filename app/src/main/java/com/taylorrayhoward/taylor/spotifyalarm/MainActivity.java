@@ -1,9 +1,8 @@
 package com.taylorrayhoward.taylor.spotifyalarm;
 
-import android.app.Dialog;
-import android.app.ProgressDialog;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -26,6 +25,7 @@ import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -33,7 +33,6 @@ import java.util.concurrent.TimeoutException;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
-import kaaes.spotify.webapi.android.models.Playlist;
 import kaaes.spotify.webapi.android.models.PlaylistSimple;
 
 import static com.spotify.sdk.android.authentication.LoginActivity.REQUEST_CODE;
@@ -49,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
     ListView alarm_listview;
     SpotifyService spotify;
     List<PlaylistSimple> listOfPlaylists;
+    AlarmManager am;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +56,8 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        am = (AlarmManager) getSystemService(ALARM_SERVICE);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -76,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
         AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
                 AuthenticationResponse.Type.TOKEN,
                 REDIRECT_URI);
-        builder.setScopes(new String[]{"user-read-private", "streaming", "playlist-read-private"});
+        builder.setScopes(new String[]{"user-read-private", "playlist-read-private"});
         AuthenticationRequest request = builder.build();
 
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
@@ -98,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
             names.add(p.name);
         }
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+        alertDialogBuilder.setCancelable(false);
         LayoutInflater inflater = getLayoutInflater();
         View convertView = inflater.inflate(R.layout.playlist_dialog, null);
         alertDialogBuilder.setView(convertView);
@@ -107,18 +110,31 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                insert(h, m, listOfPlaylists.get(i).name, listOfPlaylists.get(i).id, listOfPlaylists.get(i).uri);
-
+                insert(h, m, listOfPlaylists.get(i).name, listOfPlaylists.get(i).id, listOfPlaylists.get(i).owner.id);
                 dialog.dismiss();
             }
         });
         lv.setAdapter(adapter);
-        //alertDialog.setCancelable(false); //TODO: Make them pick a playlist here
+
 
     }
 
-    private void insert(String hour, String minute, String name, String id, String uri) {
-        db.insertAlarm(String.valueOf(hour), String.valueOf(minute), "", name, id, uri);
+    private void insert(String hour, String minute, String name, String id, String ownerid) {
+        db.insertAlarm(String.valueOf(hour), String.valueOf(minute), "", name, id, ownerid);
+
+        Calendar cal = new GregorianCalendar();
+        cal.set(Calendar.HOUR_OF_DAY, Integer.valueOf(hour));
+        cal.set(Calendar.MINUTE, Integer.valueOf(minute));
+
+        Intent alarmIntent = new Intent(getApplicationContext(), AlarmReceiver.class);
+        alarmIntent.putExtra("playlistId", id);
+        alarmIntent.putExtra("playlistOwner", ownerid);
+        PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(getApplicationContext(),
+                0, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+
+
+        am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), alarmPendingIntent);
         generateAlarmList();
     }
 
@@ -143,15 +159,8 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
         generateAlarmList();
     }
 
-    private void setupPlaylistListView(){
-
-    }
-
     private void generateAlarmList() {
         ArrayList<Alarm> alarmList = db.getAllData();
-        for (Alarm a : alarmList) {
-            Log.d("AlarmTimes", a.getTime());
-        }
         listAdapter = new AlarmAdapter(this, alarmList);
         alarm_listview.setAdapter(listAdapter);
     }
@@ -172,7 +181,6 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
 
     @Override
     public void onLoggedIn() {
-        Log.d("Login", "Successfully logged in");
         Toast.makeText(getApplicationContext(), "Log in successful", Toast.LENGTH_SHORT).show();
     }
 
@@ -199,10 +207,10 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
     private class getPlaylistSync extends AsyncTask<Void, Void, Integer> {
         @Override
         protected Integer doInBackground(Void... voids) {
-            Log.d("Async", "Getting playlist data");
             String id = spotify.getMe().id;
             listOfPlaylists  = spotify.getPlaylists(id).items;
             return 1;
+
         }
     }
 }
