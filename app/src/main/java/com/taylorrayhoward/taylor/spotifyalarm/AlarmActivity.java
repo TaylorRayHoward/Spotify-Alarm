@@ -24,14 +24,14 @@ import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Pager;
 import kaaes.spotify.webapi.android.models.PlaylistTrack;
+import static com.taylorrayhoward.taylor.spotifyalarm.Info.CLIENT_ID;
+import static com.taylorrayhoward.taylor.spotifyalarm.Info.REDIRECT_URI;
 
 import static com.spotify.sdk.android.authentication.LoginActivity.REQUEST_CODE;
 
 public class AlarmActivity extends AppCompatActivity implements ConnectionStateCallback, SpotifyPlayer.NotificationCallback  {
     String ownerid;
     String playlistId;
-    final String CLIENT_ID = Info.CLIENT_ID;
-    final String REDIRECT_URI = Info.REDIRECT_URI;
     private Player mPlayer;
     private String songUri;
     public SpotifyApi api = new SpotifyApi();
