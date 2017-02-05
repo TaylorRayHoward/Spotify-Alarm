@@ -22,5 +22,5 @@
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/timeText"
         android:layout_alignParentEnd="true"
-        android:id="@+id/switch1" />
+        android:id="@+id/alarm_on_switch" />
 </RelativeLayout>

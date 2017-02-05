@@ -7,6 +7,7 @@ package com.taylorrayhoward.taylor.spotifyalarm;
 public class Alarm {
 
 
+    private int enabled;
     private String hour;
     private String minute;
     private int id;
@@ -17,13 +18,14 @@ public class Alarm {
     String playlistURI;
     boolean twentyFourHourTime = false;
 
-    public Alarm(String hour, String minute, int id, String playlistName, String playlistId, String playlistURI) {
+    public Alarm(String hour, String minute, int id, String playlistName, String playlistId, String playlistURI, int enabled) {
         this.hour = hour;
         this.minute = minute;
         this.id = id;
         this.playlistName = playlistName;
         this.playlistId = playlistId;
         this.playlistURI = playlistURI;
+        this.enabled = enabled;
         time = hour + ":" + minute;
     }
 
@@ -52,5 +54,6 @@ public class Alarm {
     public String getPlaylistURI() {
         return playlistURI;
     }
+    public int getEnabled() { return enabled; }
 
 }

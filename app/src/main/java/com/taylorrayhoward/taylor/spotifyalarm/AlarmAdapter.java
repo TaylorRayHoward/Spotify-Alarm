@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
@@ -30,6 +31,8 @@ public class AlarmAdapter extends ArrayAdapter<Alarm> {
         String time = getItem(position).getTime();
         String playlistName = getItem(position).getPlaylistName();
         TextView timeText = (TextView) outerView.findViewById(R.id.timeText);
+        Switch alarmOnSwitch = (Switch) outerView.findViewById(R.id.alarm_on_switch);
+        alarmOnSwitch.setChecked(getItem(position).getEnabled() == 1);
         timeText.setText(time);
         //TextView playlistText = (TextView) outerView.findViewById(R.id.playlistText);
         //playlistText.setText(playlistName);

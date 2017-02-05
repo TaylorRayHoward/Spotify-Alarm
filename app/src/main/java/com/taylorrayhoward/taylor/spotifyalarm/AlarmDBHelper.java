@@ -22,6 +22,7 @@ public class AlarmDBHelper extends SQLiteOpenHelper {
     public static final String ALARM_COLUMN_PLAYLIST_NAME = "playlist_name";
     public static final String ALARM_COLUMN_PLAYLIST_ID = "playlist_id";
     public static final String ALARM_COLUMN_PLAYLIST_OWNER = "playlist_owner";
+    public static final String ALARM_COLUMN_ALARM_ENABLED = "enabled";
     public static final int ALARM_VERSION = 1;
 
 
@@ -38,10 +39,11 @@ public class AlarmDBHelper extends SQLiteOpenHelper {
 
         db.execSQL(
                 //"create table " +ALARM_TABLE_NAME +" " +"(id integer primary key, hour text, minute text, days text)"
-                String.format("create table %1$s (%2$s integer primary key, %3$s text, %4$s text, " +
-                                "%5$s text, %6$s text, %7$s text, %8$s text)", ALARM_TABLE_NAME,
+                String.format("create table %1$s (%2$s integer primary key, %3$s text, %4$s text, "
+                        + "%5$s text, %6$s text, %7$s text, %8$s text, %9$s integer)", ALARM_TABLE_NAME,
                         ALARM_COLUMN_ID, ALARM_COLUMN_HOUR, ALARM_COLUMN_MINUTE, ALARM_COLUMN_DAYS,
-                        ALARM_COLUMN_PLAYLIST_NAME, ALARM_COLUMN_PLAYLIST_ID, ALARM_COLUMN_PLAYLIST_OWNER)
+                        ALARM_COLUMN_PLAYLIST_NAME, ALARM_COLUMN_PLAYLIST_ID,
+                        ALARM_COLUMN_PLAYLIST_OWNER, ALARM_COLUMN_ALARM_ENABLED)
         );
 
     }
@@ -52,7 +54,8 @@ public class AlarmDBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public boolean insertAlarm(String hour, String minute, String days, String name, String id, String owner) {
+    public boolean insertAlarm(String hour, String minute, String days, String name, String id,
+                               String owner, int enabled) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(ALARM_COLUMN_DAYS, days);
@@ -61,6 +64,7 @@ public class AlarmDBHelper extends SQLiteOpenHelper {
         contentValues.put(ALARM_COLUMN_PLAYLIST_NAME, name);
         contentValues.put(ALARM_COLUMN_PLAYLIST_ID, id);
         contentValues.put(ALARM_COLUMN_PLAYLIST_OWNER, owner);
+        contentValues.put(ALARM_COLUMN_ALARM_ENABLED, enabled);
         db.insert(ALARM_TABLE_NAME, null, contentValues);
         return true;
     }
@@ -78,8 +82,8 @@ public class AlarmDBHelper extends SQLiteOpenHelper {
             String name = c.getString(c.getColumnIndex(ALARM_COLUMN_PLAYLIST_NAME));
             String owner = c.getString(c.getColumnIndex(ALARM_COLUMN_PLAYLIST_OWNER));
             String playlist_id = c.getString(c.getColumnIndex(ALARM_COLUMN_PLAYLIST_ID));
-
-            r.add(new Alarm(hour, minute, id, name, playlist_id, owner));
+            int enabled = c.getInt(c.getColumnIndex(ALARM_COLUMN_ALARM_ENABLED));
+            r.add(new Alarm(hour, minute, id, name, playlist_id, owner, enabled));
             c.moveToNext();
         }
         c.close();

@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
     }
 
     private void insert(String hour, String minute, String name, String id, String ownerid) {
-        db.insertAlarm(String.valueOf(hour), String.valueOf(minute), "", name, id, ownerid);
+        db.insertAlarm(String.valueOf(hour), String.valueOf(minute), "", name, id, ownerid, 1);
 
         Calendar cal = new GregorianCalendar();
         cal.set(Calendar.HOUR_OF_DAY, Integer.valueOf(hour));
