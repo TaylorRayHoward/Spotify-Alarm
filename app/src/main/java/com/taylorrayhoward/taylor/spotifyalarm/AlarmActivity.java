@@ -37,7 +37,6 @@ public class AlarmActivity extends AppCompatActivity implements ConnectionStateC
     public SpotifyApi api = new SpotifyApi();
     SpotifyService spotify;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
