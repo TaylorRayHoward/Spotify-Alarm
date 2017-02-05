@@ -80,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
                 REDIRECT_URI);
         builder.setScopes(new String[]{"user-read-private", "playlist-read-private"});
         AuthenticationRequest request = builder.build();
-
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
         setupAlarmListView();
         spotify = api.getService();

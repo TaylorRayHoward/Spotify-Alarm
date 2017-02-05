@@ -31,8 +31,8 @@ public class AlarmAdapter extends ArrayAdapter<Alarm> {
         String playlistName = getItem(position).getPlaylistName();
         TextView timeText = (TextView) outerView.findViewById(R.id.timeText);
         timeText.setText(time);
-        TextView playlistText = (TextView) outerView.findViewById(R.id.playlistText);
-        playlistText.setText(playlistName);
+        //TextView playlistText = (TextView) outerView.findViewById(R.id.playlistText);
+        //playlistText.setText(playlistName);
         return outerView;
     }
 

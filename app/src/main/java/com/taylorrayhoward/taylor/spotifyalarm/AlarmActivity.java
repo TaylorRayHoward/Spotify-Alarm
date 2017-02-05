@@ -4,7 +4,10 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
+
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
@@ -54,6 +57,13 @@ public class AlarmActivity extends AppCompatActivity implements ConnectionStateC
         AuthenticationRequest request = builder.build();
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
         spotify = api.getService();
+        Button b = (Button) findViewById(R.id.stop_button);
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
 
     }
 
@@ -87,8 +97,6 @@ public class AlarmActivity extends AppCompatActivity implements ConnectionStateC
             }
         }
     }
-
-
 
     @Override
     public void onLoggedIn() {
@@ -129,6 +137,7 @@ public class AlarmActivity extends AppCompatActivity implements ConnectionStateC
         super.onDestroy();
         Spotify.destroyPlayer(this);
     }
+
     private class getSongSync extends AsyncTask<Void, Void, Integer> {
         @Override
         protected Integer doInBackground(Void... voids) {
