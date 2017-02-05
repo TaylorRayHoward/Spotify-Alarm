@@ -19,5 +19,8 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:id="@+id/alarm_listview"
-        android:dividerHeight="10.0sp"/>
+        android:dividerHeight="10.0sp"
+        android:fadingEdgeLength="0dp"
+        android:divider="#353530"
+        />
 </RelativeLayout>
