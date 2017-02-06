@@ -41,6 +41,7 @@ import static com.taylorrayhoward.taylor.spotifyalarm.Info.REDIRECT_URI;
 
 public class MainActivity extends AppCompatActivity implements ConnectionStateCallback {
     //TODO Add database, add custom rows, add on click rows, finish whole project
+    public static int alarmId = 0;
     public String accessToken;
     public SpotifyApi api = new SpotifyApi();
     private AlarmDBHelper db = new AlarmDBHelper(this);
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
     ListView alarm_listview;
     SpotifyService spotify;
     List<PlaylistSimple> listOfPlaylists;
-    AlarmManager am;
+    public static AlarmManager am;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,8 +57,9 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        am = (AlarmManager) getSystemService(ALARM_SERVICE);
+        if(am==null){
+            am = (AlarmManager) getSystemService(ALARM_SERVICE);
+        }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -119,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
     }
 
     private void insert(String hour, String minute, String name, String id, String ownerid) {
-        db.insertAlarm(String.valueOf(hour), String.valueOf(minute), "", name, id, ownerid, 1);
+        long alarmId = db.insertAlarm(String.valueOf(hour), String.valueOf(minute), "", name, id, ownerid, 1);
 
         Calendar cal = new GregorianCalendar();
         cal.set(Calendar.HOUR_OF_DAY, Integer.valueOf(hour));
@@ -129,8 +131,8 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
         alarmIntent.putExtra("playlistId", id);
         alarmIntent.putExtra("playlistOwner", ownerid);
         PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(getApplicationContext(),
-                0, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
+                (int)alarmId, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        alarmId++;
 
 
         am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), alarmPendingIntent);
@@ -151,6 +153,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Alarm a = (Alarm)adapterView.getItemAtPosition(i);
                 db.deleteAlarm(a.getId());
+                db.setEnable(a.getId(), false);
                 generateAlarmList();
                 return true;
             }

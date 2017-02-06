@@ -32,13 +32,7 @@ public class AlarmDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-//        db.execSQL(
-//                "create table alarms " +
-//                        "(id integer primary key, hour text, minute text, days text)"
-//        );
-
         db.execSQL(
-                //"create table " +ALARM_TABLE_NAME +" " +"(id integer primary key, hour text, minute text, days text)"
                 String.format("create table %1$s (%2$s integer primary key, %3$s text, %4$s text, "
                         + "%5$s text, %6$s text, %7$s text, %8$s text, %9$s integer)", ALARM_TABLE_NAME,
                         ALARM_COLUMN_ID, ALARM_COLUMN_HOUR, ALARM_COLUMN_MINUTE, ALARM_COLUMN_DAYS,
@@ -54,7 +48,7 @@ public class AlarmDBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public boolean insertAlarm(String hour, String minute, String days, String name, String id,
+    public long insertAlarm(String hour, String minute, String days, String name, String id,
                                String owner, int enabled) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -65,8 +59,7 @@ public class AlarmDBHelper extends SQLiteOpenHelper {
         contentValues.put(ALARM_COLUMN_PLAYLIST_ID, id);
         contentValues.put(ALARM_COLUMN_PLAYLIST_OWNER, owner);
         contentValues.put(ALARM_COLUMN_ALARM_ENABLED, enabled);
-        db.insert(ALARM_TABLE_NAME, null, contentValues);
-        return true;
+        return db.insert(ALARM_TABLE_NAME, null, contentValues);
     }
 
     public ArrayList<Alarm> getAllData(){
@@ -97,7 +90,9 @@ public class AlarmDBHelper extends SQLiteOpenHelper {
 
     public Cursor getData(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("select * from " + ALARM_TABLE_NAME + " where id=" + id + "", null);
+        Cursor c = db.rawQuery("select * from " + ALARM_TABLE_NAME + " where id=" + id + "", null);
+        c.moveToFirst();
+        return c;
     }
 
     public int numberOfRows(){
@@ -118,6 +113,15 @@ public class AlarmDBHelper extends SQLiteOpenHelper {
             res.moveToNext();
         }
         return array_list;
+    }
+
+    public boolean setEnable(int id, boolean on){
+        SQLiteDatabase db = this.getReadableDatabase();
+        int enabled = on ? 1 : 0;
+        String query = "Update " +ALARM_TABLE_NAME +" set " +ALARM_COLUMN_ALARM_ENABLED
+                    +"= " +enabled +" where id = " +id;
+        db.execSQL(query);
+        return true;
     }
 
 }
