@@ -41,7 +41,6 @@ import static com.taylorrayhoward.taylor.spotifyalarm.Info.REDIRECT_URI;
 
 public class MainActivity extends AppCompatActivity implements ConnectionStateCallback {
     //TODO Add database, add custom rows, add on click rows, finish whole project
-    public static int alarmId = 0;
     public String accessToken;
     public SpotifyApi api = new SpotifyApi();
     private AlarmDBHelper db = new AlarmDBHelper(this);
@@ -152,8 +151,12 @@ public class MainActivity extends AppCompatActivity implements ConnectionStateCa
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Alarm a = (Alarm)adapterView.getItemAtPosition(i);
+                int alarmId = a.getId();
                 db.deleteAlarm(a.getId());
-                db.setEnable(a.getId(), false);
+                Intent alarmIntent = new Intent(getApplicationContext(), AlarmReceiver.class);
+                PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(getApplicationContext(),
+                        alarmId, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                am.cancel(alarmPendingIntent);
                 generateAlarmList();
                 return true;
             }
